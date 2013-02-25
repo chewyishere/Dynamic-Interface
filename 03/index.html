@@ -1,0 +1,93 @@
+<html>
+<head>
+
+<script type="text/javascript">
+
+function start() {
+var box = document.getElementById("box");
+var container = document.getElementById("container");
+
+
+var x = 2;
+var y = 1;
+
+var xSpeed = 2;
+var ySpeed = 5;
+
+var maxX = container.clientWidth;
+var maxY = container.clientHeight;
+
+var boxWidth = box.clientWidth;
+var boxHeight = box.clientHeight;
+
+setInterval(function() {
+if(x+boxWidth >= maxX || x <= 0) {
+xSpeed *= -1;
+}
+
+if(y+boxHeight >= maxY || y <= 0) {
+ySpeed *= -1;
+}
+
+x+=xSpeed;
+y+=ySpeed;
+
+box.style.marginLeft = x + "px";
+box.style.marginTop = y + "px";
+
+},1000/500);
+
+}
+
+</script>
+
+<style type="text/css">
+
+body {
+background: #000330;
+}
+
+#container {
+width:300px;
+height:300px;
+border:5px solid white;
+}
+
+#bigBox{
+    border:double 3px;
+    background-color: whiteSmoke;
+    width:10px;
+    height:15px;
+    margin: 10px;
+     box-shadow: 4px 4px 8px #888888;
+}
+
+#box{
+    width: 30px;
+    height: 30px;
+    background:#FFFF00; 
+    margin: 100px;
+    border-radius:5px;
+    border-color:white;
+    margin-right:0px;
+    margin-bottom:0px;
+    box-shadow: 4px 4px 8px #888888;
+
+}
+
+
+
+p{
+	width: 400px;
+	margin: auto;
+	margin-top: 30px;
+}
+</style>
+</head>
+
+<body onload="start();">
+<div id="container">
+   <div id="box"></div>
+</div>
+</body>
+</html>
