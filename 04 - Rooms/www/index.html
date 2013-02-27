@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+<title>Chat</title>
+
+<link type="stylesheet" rel="stylesheet" href="./css/main.css" />
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+
+<script>
+var CHAT_ADMIN_NAME = "Another New Alien";
+var KEYCODE_ENTER_BUTTON = 13;
+
+$(document).ready(function() {
+var socket = io.connect('http://localhost');
+
+socket.on('user joined',function(username) {
+appendMessage(" Welcome, " + username);
+});
+
+socket.on('user left',function(username) {
+appendMessage(CHAT_ADMIN_NAME,username + "doesn't like here :(",["is-admin"]);
+});
+
+socket.on('user changed name',function(oldName,newName) {
+appendMessage(CHAT_ADMIN_NAME,oldName + "Changed name to" + newName,["is-admin"]);
+});
+
+socket.on("user chatted",function(data) {
+appendMessage(data.username,data.message,["is-someone-else"]);
+});
+
+var username = "Another New Alien"; // a random username.
+var room = false;
+
+// adding messages
+function appendMessage(username,message,classes) {
+if(!classes) classes = [];
+
+var p = $("<p></p>");
+var span = $("<span></span>");
+span.addClass("username");
+span.text(username);
+p.append(span);
+p.append(message);
+
+$.each(classes,function(i,className) {
+p.addClass(className);
+});
+
+$("#box").append(p);
+
+// scroll down so we can see the latest!
+$("#box").scrollTop($("#box")[0].scrollHeight);
+}
+
+// selecting rooms
+$("select").change(function() {
+var data = {};
+data.username = username;
+if(room) data.oldRoom = room;
+data.newRoom = $(this).val();
+room = data.newRoom;
+
+socket.emit('change room',data);
+
+var prettyRoomName = $(this).find("option[value='" + room + "']").text();
+appendMessage(CHAT_ADMIN_NAME,"Welcome to " + prettyRoomName,["is-admin"]);
+
+});
+
+// changing usernames
+$("#username").keyup(function(evt) {
+if(evt.keyCode == KEYCODE_ENTER_BUTTON) {
+var newUsername = $.trim($(this).val());
+if(newUsername != "") {
+var data = {};
+data.room = room;
+data.oldName = username;
+username = newUsername;
+data.newName = username;
+
+socket.emit('user changed name',data);
+appendMessage(CHAT_ADMIN_NAME,"Call me" + data.newName + ".",["is-admin"]);
+}
+}
+
+return false;
+});
+
+// sending messages
+$("#chatbox").keyup(function(evt) {
+
+if(evt.keyCode == KEYCODE_ENTER_BUTTON) {
+var data = {};
+data.room = room;
+data.username = username;
+data.message = $(this).val();
+
+socket.emit('chat',data);
+appendMessage(data.username,data.message,["is-me"]);
+
+$(this).val(""); // clears the box for the next message.
+}
+
+return false;
+})
+
+$("#username").val(username);
+$("select").trigger("change"); // force the lobby to be selected.
+});
+</script>
+</head>
+<body>
+	<h1>Alien Union</h1>
+<div id="login">
+<h2>Your Tag: <input type="text" id="username" /></h2>
+<h2> Residence: </h2>
+<select>
+<option value="Earth">Earth</option>
+<option value="Mars">Mars</option>
+<option value="Moon">Moon</option>
+</select>
+</p>
+</div>
+
+<div id="chat">
+<div id="box">
+<!--
+<p class="is-admin"><span class="username">Username:</span> Hello</p>
+<p class="is-someone-else"><span class="username">Username:</span> Hello</p>
+<p class="is-me"><span class="username">Username:</span> Hello</p>
+-->
+</div>
+
+<input id="chatbox" type="text" />
+</div>
+
+</body>
+</html>
